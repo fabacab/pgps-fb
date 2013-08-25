@@ -1,0 +1,6 @@
+[submodule "lib/pear"]
+	path = lib/pear
+	url = https://github.com/pear/Config_Lite.git
+[submodule "lib/facebook"]
+	path = lib/facebook
+	url = https://github.com/facebook/facebook-php-sdk.git

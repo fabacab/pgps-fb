@@ -1,0 +1,2 @@
+SetEnv FACEBOOK_APP_ID your_app_id_here
+SetEnv FACEBOOK_SECRET your_secret_here
