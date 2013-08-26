@@ -140,12 +140,12 @@ window.fbAsyncInit = function () {
     <form id="pgps-fb-form" action="<?php print $_SERVER['PHP_SELF']?>">
         <input type="hidden" name="facebook_id" value="<?php print he($user_id);?>" />
         <fieldset><legend>My gender and preferred pronouns&hellip;</legend>
-            <p>My gender is <input id="gender" name="gender" placeholder="androsnuffleupagus and supercalifragilisticexpialidocious" value="<?php print he($person->gender);?>"<?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/>, and my pronouns are:</p>
+            <p>My gender is <input id="gender" name="gender" placeholder="androsnuffleupagus and supercalifragilisticexpialidocious" value="<?php print he($person->gender);?>"<?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/>, and when you refer to me please take your cues from the following examples:</p>
             <ul>
-                <li><input id="pgp-personal-subjective" name="personal_subjective" placeholder="they/zie" value="<?php print he($person->personal_subjective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> <span class="helptext">personal subjective pronoun</span></li>
-                <li><input id="pgp-personal-objective" name="personal_objective" placeholder="them/zim" value="<?php print he($person->personal_objective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> <span class="helptext">personal objective pronoun</span></li>
-                <li><input id="pgp-possesive" name="possesive" placeholder="theirs/zirs" value="<?php print he($person->possesive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> <span class="helptext">possesive pronoun</span></li>
-                <li><input id="pgp-reflexive" name="reflexive" placeholder="themself/zimself" value="<?php print he($person->reflexive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> <span class="helptext">reflexive pronoun</span></li>
+                <li><label for="pgp-personal-subjective">Personal subjective pronoun:</label> "We hung out last week and <input id="pgp-personal-subjective" name="personal_subjective" placeholder="they/zie/she/he" value="<?php print he($person->personal_subjective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> looked great!"</li>
+                <li><label for="pgp-personal-objective">Personal objective pronoun:</label> "When I heard <input id="pgp-personal-objective" name="personal_objective" placeholder="them/zim/her/him" value="<?php print he($person->personal_objective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> use the correct pronoun, I was <em>so pleased</em>!"</li>
+                <li><label for="pgp-possesive">Possesive pronoun:</label> "I thought <input id="pgp-possesive" name="possesive" placeholder="their/zir/her/his" value="<?php print he($person->possesive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> points are important to consider."</li>
+                <li><label for="pgp-reflexive">Reflexive pronoun:</label> "<?php print he($name);?> made it <input id="pgp-reflexive" name="reflexive" placeholder="themself/zimself/herself/himself" value="<?php print he($person->reflexive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/>, how awesome is that!"</li>
             </ul>
         </fieldset>
 <!--
