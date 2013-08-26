@@ -8,6 +8,7 @@ class PersonWithPronouns {
     const FS_PATH = 'people/'; // Used for filesystem storage.
 
     function PersonWithPronouns ($id) {
+        if ( ! (int) $id ) { throw new Exception('Invalid User ID.'); }
         $this->id = $id;
         if (!file_exists(self::FS_PATH . $id)) {
             if (!touch(self::FS_PATH . $id)) {

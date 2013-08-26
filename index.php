@@ -5,6 +5,16 @@ function he ($str) {
     return htmlentities($str, ENT_QUOTES, 'UTF-8');
 }
 
+function getFacebookAppToken () {
+    $url = 'https://graph.facebook.com/oauth/access_token?'.
+           'client_id=' . getenv('FACEBOOK_APP_ID') .
+           '&client_secret=' . getenv('FACEBOOK_SECRET') .
+           '&grant_type=client_credentials';
+    $res = file_get_contents($url);
+    list(, $token) = explode('=', $res);
+    return $token;
+}
+
 $FB = new Facebook(array(
     'appId' => getenv('FACEBOOK_APP_ID'),
     'secret' => getenv('FACEBOOK_SECRET'),
@@ -17,6 +27,8 @@ if ($user_id) {
     try {
         // Get basic data from the Graph API.
         $me = $FB->api('/me');
+        // Get a list of the user's friends.
+        $friends = $FB->api('/me/friends?fields=id,name,installed');
     } catch (FacebookApiException $e) {
         if (!$FB->getAccessToken()) {
             $url = ($_SERVER['HTTPS']) ? 'https:// ': 'http://';
@@ -24,16 +36,56 @@ if ($user_id) {
             exit();
         }
     }
-}
 
-$person = new PersonWithPronouns($user_id);
-if ($_REQUEST['submit']) {
-    $person->gender = $_REQUEST['gender'];
-    $person->personal_subjective = $_REQUEST['personal_subjective'];
-    $person->personal_objective = $_REQUEST['personal_objective'];
-    $person->possesive = $_REQUEST['possesive'];
-    $person->reflexive = $_REQUEST['reflexive'];
-    $person->persist();
+    $name = $me['name'];
+    $person = new PersonWithPronouns($user_id);
+    if (!empty($_GET['show_user'])) {
+        foreach ($friends['data'] as $friend) {
+            if ($_GET['show_user'] == $friend['id']) {
+                $name = $friend['name'];
+                $person = new PersonWithPronouns($friend['id']);
+            }
+        }
+    }
+
+    // Only save new data if the logged-in Facebook user is updating themself.
+    if ($_REQUEST['submit'] && ($_REQUEST['facebook_id'] === $user_id)) {
+        $old_person = clone $person;
+        $person->gender = $_REQUEST['gender'];
+        $person->personal_subjective = $_REQUEST['personal_subjective'];
+        $person->personal_objective = $_REQUEST['personal_objective'];
+        $person->possesive = $_REQUEST['possesive'];
+        $person->reflexive = $_REQUEST['reflexive'];
+        $person->persist();
+    }
+
+    // Set Gender from Facebook's preference, if it exists.
+    if ($me['gender'] && !$person->gender) {
+        $person->gender = $me['gender'];
+    }
+
+    // Determine if any of the gender or pronoun fields have changed.
+    if ($old_person != $person) {
+        // If they have, send a notifcation via Facebook Notifications API to users
+        // of this app. For users not using this app, send a Facebook message.
+        // Get an App token.
+        $FB->setAccessToken(getFacebookAppToken());
+        foreach ($friends['data'] as $friend) {
+            if ($friend['installed']) {
+                // Send a notification to this friend.
+                $their = ($person->possesive) ? $person->possesive: 'their';
+                try {
+                    $FB->api("/{$friend['id']}/notifications", 'post', array(
+                        'template' => "@[{$me['id']}] changed $their gender pronouns.",
+                        'href' => "?show_user={$me['id']}"
+                    ));
+                } catch (FacebookApiException $e) {
+                    // TODO!
+                }
+            }
+        }
+    }
+
 }
 ?><!DOCTYPE html>
 <html lang="en">
@@ -82,21 +134,24 @@ window.fbAsyncInit = function () {
 </section>
     <p><span class="fb-login-button">Log in to start using Preferred Gender Pronouns for Facebook</span></p>
 <?php else : ?>
-    <p>Hi, my name is <?php print $me['name'];?>. (<a id="fb-logout-button" class="FacebookButton" href="">Log out</a>)</p>
+    <p>Hi, my name is <?php print he($name);?>. (<a id="fb-logout-button" class="FacebookButton" href="">Log out<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a> <?php if (!empty($_GET['show_user'])) :?><a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
     <form id="pgps-fb-form" action="<?php print $_SERVER['PHP_SELF']?>">
+        <input type="hidden" name="facebook_id" value="<?php print he($user_id);?>" />
         <fieldset><legend>My gender and preferred pronouns&hellip;</legend>
-            <p>My gender is <input id="gender" name="gender" placeholder="androsnuffleupagus and supercalifragilisticexpialidocious" value="<?php print he($person->gender);?>" />, and my pronouns are:</p>
+            <p>My gender is <input id="gender" name="gender" placeholder="androsnuffleupagus and supercalifragilisticexpialidocious" value="<?php print he($person->gender);?>"<?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/>, and my pronouns are:</p>
             <ul>
-                <li><input id="pgp-personal-subjective" name="personal_subjective" placeholder="they/zie" value="<?php print he($person->personal_subjective);?>" /> <span class="helptext">personal subjective pronoun</span></li>
-                <li><input id="pgp-personal-objective" name="personal_objective" placeholder="them/zim" value="<?php print he($person->personal_objective);?>" /> <span class="helptext">personal objective pronoun</span></li>
-                <li><input id="pgp-possesive" name="possesive" placeholder="theirs/zirs" value="<?php print he($person->possesive);?>" /> <span class="helptext">possesive pronoun</span></li>
-                <li><input id="pgp-reflexive" name="reflexive" placeholder="themself/zimself" value="<?php print he($person->reflexive);?>" /> <span class="helptext">reflexive pronoun</span></li>
+                <li><input id="pgp-personal-subjective" name="personal_subjective" placeholder="they/zie" value="<?php print he($person->personal_subjective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> <span class="helptext">personal subjective pronoun</span></li>
+                <li><input id="pgp-personal-objective" name="personal_objective" placeholder="them/zim" value="<?php print he($person->personal_objective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> <span class="helptext">personal objective pronoun</span></li>
+                <li><input id="pgp-possesive" name="possesive" placeholder="theirs/zirs" value="<?php print he($person->possesive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> <span class="helptext">possesive pronoun</span></li>
+                <li><input id="pgp-reflexive" name="reflexive" placeholder="themself/zimself" value="<?php print he($person->reflexive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> <span class="helptext">reflexive pronoun</span></li>
             </ul>
         </fieldset>
+<!--
         <fieldset><legend>App Preferences</legend>
             <?php // TODO! ?>
         </fieldset>
-        <input type="submit" name="submit" value="I see no reason why the gunpower treason should ever be forgot." />
+-->
+        <input type="submit" name="submit" value="I see no reason why the gunpowder treason should ever be forgot." />
     </form>
     <p>(<a href="http://www.grammar-monster.com/lessons/pronouns_different_types.htm">Grammar is fun</a>!)</p>
 <?php endif; ?>
