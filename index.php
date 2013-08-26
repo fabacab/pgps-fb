@@ -39,6 +39,41 @@ if ($user_id) {
 
     $name = $me['name'];
     $person = new PersonWithPronouns($user_id);
+
+    if ($_REQUEST['submit']) {
+        $old_person = clone $person;
+        $person->gender = $_REQUEST['gender'];
+        $person->personal_subjective = $_REQUEST['personal_subjective'];
+        $person->personal_objective = $_REQUEST['personal_objective'];
+        $person->possesive = $_REQUEST['possesive'];
+        $person->reflexive = $_REQUEST['reflexive'];
+        // Only save new data if the logged-in Facebook user is updating themself.
+        if ($_REQUEST['facebook_id'] === $user_id) {
+            $person->persist();
+        }
+        // Determine if any of the gender or pronoun fields have changed.
+        if ($old_person != $person) {
+            // If they have, send a notifcation via Facebook Notifications API to users
+            // of this app. For users not using this app, send a Facebook message.
+            // Get an App token.
+            $FB->setAccessToken(getFacebookAppToken());
+            foreach ($friends['data'] as $friend) {
+                if ($friend['installed']) {
+                    // Send a notification to this friend.
+                    $their = ($person->possesive) ? $person->possesive: 'their';
+                    try {
+                        $FB->api("/{$friend['id']}/notifications", 'post', array(
+                            'template' => "@[{$me['id']}] changed $their gender pronouns.",
+                            'href' => "?show_user={$me['id']}"
+                        ));
+                    } catch (FacebookApiException $e) {
+                        // TODO!
+                    }
+                }
+            }
+        }
+    }
+
     if (!empty($_GET['show_user'])) {
         foreach ($friends['data'] as $friend) {
             if ($_GET['show_user'] == $friend['id']) {
@@ -48,42 +83,9 @@ if ($user_id) {
         }
     }
 
-    // Only save new data if the logged-in Facebook user is updating themself.
-    if ($_REQUEST['submit'] && ($_REQUEST['facebook_id'] === $user_id)) {
-        $old_person = clone $person;
-        $person->gender = $_REQUEST['gender'];
-        $person->personal_subjective = $_REQUEST['personal_subjective'];
-        $person->personal_objective = $_REQUEST['personal_objective'];
-        $person->possesive = $_REQUEST['possesive'];
-        $person->reflexive = $_REQUEST['reflexive'];
-        $person->persist();
-    }
-
     // Set Gender from Facebook's preference, if it exists.
     if ($me['gender'] && !$person->gender) {
         $person->gender = $me['gender'];
-    }
-
-    // Determine if any of the gender or pronoun fields have changed.
-    if ($old_person != $person) {
-        // If they have, send a notifcation via Facebook Notifications API to users
-        // of this app. For users not using this app, send a Facebook message.
-        // Get an App token.
-        $FB->setAccessToken(getFacebookAppToken());
-        foreach ($friends['data'] as $friend) {
-            if ($friend['installed']) {
-                // Send a notification to this friend.
-                $their = ($person->possesive) ? $person->possesive: 'their';
-                try {
-                    $FB->api("/{$friend['id']}/notifications", 'post', array(
-                        'template' => "@[{$me['id']}] changed $their gender pronouns.",
-                        'href' => "?show_user={$me['id']}"
-                    ));
-                } catch (FacebookApiException $e) {
-                    // TODO!
-                }
-            }
-        }
     }
 
 }
