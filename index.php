@@ -176,7 +176,7 @@ window.fbAsyncInit = function () {
     <div class="FlashMessage"><?php print getFlashMessage();?></div>
     <p>Hi, my name is <a href="<?php print he($me['link']);?>" target="_top"><img alt="" src="<?php print he($me['picture_url']);?>" /><?php print he($name);?></a>. (<a id="fb-logout-button" class="FacebookButton" href="">Log out of Facebook<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a><?php if (!empty($_GET['show_user'])) :?>. <a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
     <form id="pgps-fb-form" action="<?php print $_SERVER['PHP_SELF']?>">
-        <input type="hidden" name="facebook_id" value="<?php print he($user_id);?>" />
+        <input type="hidden" name="facebook_id" value="<?php $val = (empty($_GET['show_user'])) ? $user_id: $_GET['show_user']; print he($val);?>" />
         <fieldset><legend>My gender and preferred pronouns&hellip;</legend>
             <p><label>My gender is <input id="gender" name="gender" placeholder="androsnuffleupagus and supercalifragilisticexpialidocious" value="<?php print he($person->gender);?>"<?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/></label>, and when you refer to me please take your cues from the following examples:</p>
             <ul>
