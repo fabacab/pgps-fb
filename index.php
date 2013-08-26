@@ -174,7 +174,7 @@ window.fbAsyncInit = function () {
     <p><span class="fb-login-button">Log in to start using Preferred Gender Pronouns for Facebook</span></p>
 <?php else : ?>
     <div class="FlashMessage"><?php print getFlashMessage();?></div>
-    <p>Hi, my name is <a href="<?php print he($me['link']);?>" target="_top"><img alt="" src="<?php print he($me['picture_url']);?>" /><?php print he($name);?></a>. (<a id="fb-logout-button" class="FacebookButton" href="">Log out<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a> <?php if (!empty($_GET['show_user'])) :?><a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
+    <p>Hi, my name is <a href="<?php print he($me['link']);?>" target="_top"><img alt="" src="<?php print he($me['picture_url']);?>" /><?php print he($name);?></a>. (<a id="fb-logout-button" class="FacebookButton" href="">Log out of Facebook<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a><?php if (!empty($_GET['show_user'])) :?>. <a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
     <form id="pgps-fb-form" action="<?php print $_SERVER['PHP_SELF']?>">
         <input type="hidden" name="facebook_id" value="<?php print he($user_id);?>" />
         <fieldset><legend>My gender and preferred pronouns&hellip;</legend>
