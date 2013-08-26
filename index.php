@@ -111,7 +111,7 @@ if ($user_id) {
         }
     }
 
-    if (!empty($_GET['show_user'])) {
+    if (!empty($_GET['show_user']) && $friends['data']) {
         foreach ($friends['data'] as $friend) {
             if ($_GET['show_user'] == $friend['id']) {
                 $name = $friend['name'];
