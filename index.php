@@ -193,7 +193,7 @@ window.fbAsyncInit = function () {
 -->
         <input type="submit" name="submit" value="I see no reason why the gunpowder treason should ever be forgot." />
     </form>
-    <p>(<a href="http://www.grammar-monster.com/lessons/pronouns_different_types.htm">Grammar is fun</a>!)</p>
+    <p>(<a href="http://www.grammar-monster.com/lessons/pronouns_different_types.htm" target="_blank">Grammar is fun</a>!)</p>
 <?php endif; ?>
 </div>
 </body>
