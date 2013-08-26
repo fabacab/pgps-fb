@@ -14,7 +14,26 @@ function getFacebookAppToken () {
     list(, $token) = explode('=', $res);
     return $token;
 }
+function getFlashMessage ($output = 'html', $before = '<li>', $after = '</li>') {
+    global $pgps_flashmsg;
+    if (count($pgps_flashmsg)) {
+        $out = '';
+        foreach ($pgps_flashmsg as $msg) {
+            switch ($output) {
+                case 'HTML':
+                case 'html':
+                    $out .= '<ul>';
+                    $out .= $before . he($msg) . $after;
+                    $out .= '</ul>';
+                default:
+                    break;
+            }
+        }
+        return $out;
+    }
+}
 
+// Initialize.
 $FB = new Facebook(array(
     'appId' => getenv('FACEBOOK_APP_ID'),
     'secret' => getenv('FACEBOOK_SECRET'),
@@ -22,11 +41,15 @@ $FB = new Facebook(array(
     'trustForwarded' => true,
 ));
 $user_id = $FB->getUser();
+$pgps_errors = array();
+$pgps_flashmsg = array();
 
 if ($user_id) {
     try {
         // Get basic data from the Graph API.
         $me = $FB->api('/me');
+        $res = $FB->api('/me?fields=picture');
+        $me['picture_url'] = $res['picture']['data']['url'];
         // Get a list of the user's friends.
         $friends = $FB->api('/me/friends?fields=id,name,installed');
     } catch (FacebookApiException $e) {
@@ -49,7 +72,9 @@ if ($user_id) {
         $person->reflexive = $_REQUEST['reflexive'];
         // Only save new data if the logged-in Facebook user is updating themself.
         if ($_REQUEST['facebook_id'] === $user_id) {
-            $person->persist();
+            if ($person->persist()) {
+                array_push($pgps_flashmsg, 'Saved your new gender and pronoun information.');
+            }
         }
         // Determine if any of the gender or pronoun fields have changed.
         if ($old_person != $person) {
@@ -57,6 +82,7 @@ if ($user_id) {
             // of this app. For users not using this app, send a Facebook message.
             // Get an App token.
             $FB->setAccessToken(getFacebookAppToken());
+            $num_notifications = 0;
             foreach ($friends['data'] as $friend) {
                 if ($friend['installed']) {
                     // Send a notification to this friend.
@@ -66,9 +92,20 @@ if ($user_id) {
                             'template' => "@[{$me['id']}] changed $their gender pronouns.",
                             'href' => "?show_user={$me['id']}"
                         ));
+                        $num_notifications++;
                     } catch (FacebookApiException $e) {
-                        // TODO!
+                        $pgps_errors[] = $e;
                     }
+                }
+            }
+            if ($num_notifications) {
+                array_push($pgps_flashmsg, "Your gender pronouns have been updated and a notification was sent to $num_notifications of your friends.");
+            }
+            if ($pgps_errors) {
+                array_push($pgps_flashmsg, "Some errors occurred.");
+                foreach ($pgps_errors as $err) {
+                    $msg = "An error of type {$err->getType()} occurred: " . json_encode($err->getResult());
+                    array_push($pgps_flashmsg, $msg);
                 }
             }
         }
@@ -133,14 +170,15 @@ window.fbAsyncInit = function () {
 <?php if (!$user_id) : ?>
     <section id="explanation">
         <p>This app lets you break out of the binary gender restriction on Facebook. Type your gender and the pronouns you use in free-form text fields. Come back to change either at any time you like, as often as you please. You can even let this app send your friends notifcations any time you make a change to your preferred gender pronoun(s), to help avoid "that awkward moment when you're talking about a friend by their new pronouns, but your other friends haven't realized it yet."</p>
-</section>
+    </section>
     <p><span class="fb-login-button">Log in to start using Preferred Gender Pronouns for Facebook</span></p>
 <?php else : ?>
-    <p>Hi, my name is <?php print he($name);?>. (<a id="fb-logout-button" class="FacebookButton" href="">Log out<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a> <?php if (!empty($_GET['show_user'])) :?><a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
+    <div class="FlashMessage"><?php print getFlashMessage();?></div>
+    <p>Hi, my name is <a href="<?php print he($me['link']);?>" target="_top"><img alt="" src="<?php print he($me['picture_url']);?>" /><?php print he($name);?></a>. (<a id="fb-logout-button" class="FacebookButton" href="">Log out<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a> <?php if (!empty($_GET['show_user'])) :?><a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
     <form id="pgps-fb-form" action="<?php print $_SERVER['PHP_SELF']?>">
         <input type="hidden" name="facebook_id" value="<?php print he($user_id);?>" />
         <fieldset><legend>My gender and preferred pronouns&hellip;</legend>
-            <p>My gender is <input id="gender" name="gender" placeholder="androsnuffleupagus and supercalifragilisticexpialidocious" value="<?php print he($person->gender);?>"<?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/>, and when you refer to me please take your cues from the following examples:</p>
+            <p><label>My gender is <input id="gender" name="gender" placeholder="androsnuffleupagus and supercalifragilisticexpialidocious" value="<?php print he($person->gender);?>"<?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/></label>, and when you refer to me please take your cues from the following examples:</p>
             <ul>
                 <li><label for="pgp-personal-subjective">Personal subjective pronoun:</label> "We hung out last week and <input id="pgp-personal-subjective" name="personal_subjective" placeholder="they/zie/she/he" value="<?php print he($person->personal_subjective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> looked great!"</li>
                 <li><label for="pgp-personal-objective">Personal objective pronoun:</label> "When I heard <input id="pgp-personal-objective" name="personal_objective" placeholder="them/zim/her/him" value="<?php print he($person->personal_objective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> use the correct pronoun, I was <em>so pleased</em>!"</li>

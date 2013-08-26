@@ -33,8 +33,9 @@ class PersonWithPronouns {
                 'possesive' => $this->possesive,
                 'reflexive' => $this->reflexive
             ));
+            return true;
         } catch (Config_Lite_Exception $e) {
-            // TODO.
+            throw new Exception('Failed to persist new data.');
         }
     }
 }
