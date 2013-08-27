@@ -49,9 +49,9 @@ if ($user_id) {
         // Get basic data from the Graph API.
         $me = $FB->api('/me');
         $res = $FB->api('/me?fields=picture');
-        $me['picture_url'] = $res['picture']['data']['url'];
+        $my_picture_url = $res['picture']['data']['url'];
         // Get a list of the user's friends.
-        $friends = $FB->api('/me/friends?fields=id,name,installed');
+        $friends = $FB->api('/me/friends?fields=id,name,link,installed');
     } catch (FacebookApiException $e) {
         if (!$FB->getAccessToken()) {
             $url = ($_SERVER['HTTPS']) ? 'https:// ': 'http://';
@@ -60,7 +60,8 @@ if ($user_id) {
         }
     }
 
-    $name = $me['name'];
+    $my_name = $me['name'];
+    $my_link = $me['link'];
     $person = new PersonWithPronouns($user_id);
 
     if ($_REQUEST['submit']) {
@@ -114,7 +115,9 @@ if ($user_id) {
     if (!empty($_GET['show_user']) && $friends['data']) {
         foreach ($friends['data'] as $friend) {
             if ($_GET['show_user'] == $friend['id']) {
-                $name = $friend['name'];
+                $my_name = $friend['name'];
+                $my_link = $friend['link'];
+                $my_picture_url = "https://graph.facebook.com/{$friend['id']}/picture?type=square";
                 $person = new PersonWithPronouns($friend['id']);
             }
         }
@@ -174,7 +177,7 @@ window.fbAsyncInit = function () {
     <p><span class="fb-login-button">Log in to start using Preferred Gender Pronouns for Facebook</span></p>
 <?php else : ?>
     <div class="FlashMessage"><?php print getFlashMessage();?></div>
-    <p>Hi, my name is <a href="<?php print he($me['link']);?>" target="_top"><img alt="" src="<?php print he($me['picture_url']);?>" /><?php print he($name);?></a>. (<a id="fb-logout-button" class="FacebookButton" href="">Log out of Facebook<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a><?php if (!empty($_GET['show_user'])) :?>. <a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
+    <p>Hi, my name is <a href="<?php print he($my_link);?>" target="_top"><img alt="" src="<?php print he($my_picture_url);?>" /><?php print he($my_name);?></a>. (<a id="fb-logout-button" class="FacebookButton" href="<?php print $_SERVER['PHP_SELF'];?>">Log out of Facebook<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a><?php if (!empty($_GET['show_user'])) :?>. <a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
     <form id="pgps-fb-form" action="<?php print $_SERVER['PHP_SELF']?>">
         <input type="hidden" name="facebook_id" value="<?php $val = (empty($_GET['show_user'])) ? $user_id: $_GET['show_user']; print he($val);?>" />
         <fieldset><legend>My gender and preferred pronouns&hellip;</legend>
@@ -183,7 +186,7 @@ window.fbAsyncInit = function () {
                 <li><label for="pgp-personal-subjective">Personal subjective pronoun:</label> "We hung out last week and <input id="pgp-personal-subjective" name="personal_subjective" placeholder="they/zie/she/he" value="<?php print he($person->personal_subjective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> looked great!"</li>
                 <li><label for="pgp-personal-objective">Personal objective pronoun:</label> "When I heard <input id="pgp-personal-objective" name="personal_objective" placeholder="them/zim/her/him" value="<?php print he($person->personal_objective);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> use the correct pronoun, I was <em>so pleased</em>!"</li>
                 <li><label for="pgp-possesive">Possesive pronoun:</label> "I think <input id="pgp-possesive" name="possesive" placeholder="their/zir/her/his" value="<?php print he($person->possesive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/> points are important to consider."</li>
-                <li><label for="pgp-reflexive">Reflexive pronoun:</label> "<?php print he($name);?> made it <input id="pgp-reflexive" name="reflexive" placeholder="themself/zimself/herself/himself" value="<?php print he($person->reflexive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/>, how awesome is that!"</li>
+                <li><label for="pgp-reflexive">Reflexive pronoun:</label> "<?php print he($my_name);?> made it <input id="pgp-reflexive" name="reflexive" placeholder="themself/zimself/herself/himself" value="<?php print he($person->reflexive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/>, how awesome is that!"</li>
             </ul>
         </fieldset>
 <!--
