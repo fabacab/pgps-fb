@@ -215,6 +215,9 @@ window.fbAsyncInit = function () {
     <?php endif;?>
     <p>(<a href="http://www.grammar-monster.com/lessons/pronouns_different_types.htm" target="_blank">Grammar is fun</a>!)</p>
 <?php endif; ?>
+    <section id="Footer">
+        <p><a href="http://Cyberbusking.org/">I &hearts; gender expression</a>. Please build inclusive technology; it's not just more respectful, it's more robust, too. <a href="http://maymay.net/blog/2009/01/22/gender-and-technology-at-ignitesydney-with-presentation-slides/">Learn more</a>.</p>
+    </section>
 </div>
 </body>
 </html>
