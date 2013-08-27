@@ -64,18 +64,16 @@ if ($user_id) {
     $my_link = $me['link'];
     $person = new PersonWithPronouns($user_id);
 
-    if ($_REQUEST['submit']) {
+    // Only save new data if the logged-in Facebook user is updating themself.
+    if ($_REQUEST['submit'] && ($_REQUEST['facebook_id'] === $user_id)) {
         $old_person = clone $person;
         $person->gender = $_REQUEST['gender'];
         $person->personal_subjective = $_REQUEST['personal_subjective'];
         $person->personal_objective = $_REQUEST['personal_objective'];
         $person->possesive = $_REQUEST['possesive'];
         $person->reflexive = $_REQUEST['reflexive'];
-        // Only save new data if the logged-in Facebook user is updating themself.
-        if ($_REQUEST['facebook_id'] === $user_id) {
-            if ($person->persist()) {
-                array_push($pgps_flashmsg, 'Saved your new gender and pronoun information.');
-            }
+        if ($person->persist()) {
+            array_push($pgps_flashmsg, 'Saved your new gender and pronoun information.');
         }
         // Determine if any of the gender or pronoun fields have changed.
         if ($old_person != $person) {
