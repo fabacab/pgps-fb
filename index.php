@@ -4,6 +4,11 @@ require_once 'lib/pgps-fb.php';
 function he ($str) {
     return htmlentities($str, ENT_QUOTES, 'UTF-8');
 }
+function fullUrl ($page, $encode = false) {
+    $https = ($_SERVER['HTTPS']) ? 'https' : 'http';
+    $ret = "$https://{$_SERVER['HTTP_HOST']}/$page";
+    return ($encode) ? $encode($ret) : $ret;
+}
 
 function getFacebookAppToken () {
     $url = 'https://graph.facebook.com/oauth/access_token?'.
@@ -126,14 +131,14 @@ if ($user_id) {
             $my_link = $friend['link'];
             $my_picture_url = "https://graph.facebook.com/{$friend['id']}/picture?type=square";
             $person = new PersonWithPronouns($friend['id']);
+            if (!$friend['installed']) {
+                $person->installed = false;
+            }
         }
-    }
-
-    // Set Gender from Facebook's preference, if it exists.
-    if ($me['gender'] && !$person->gender) {
+    } else if ($me['gender'] && !$person->gender) {
+        // Set Gender from Facebook's preference, if it exists.
         $person->gender = $me['gender'];
     }
-
 }
 ?><!DOCTYPE html>
 <html lang="en">
@@ -185,6 +190,9 @@ window.fbAsyncInit = function () {
 <?php else : ?>
     <?php if ($friends['data']) : include 'search.php'; endif;?>
     <div class="FlashMessage"><?php print getFlashMessage();?></div>
+    <?php if (!empty($_GET['show_user']) && (false === $person->installed)) : ?>
+    <p><?php print he($my_name);?> has not yet installed this app! <a href="<?php print ($_SERVER['HTTPS']) ? 'https' : 'http';?>://www.facebook.com/dialog/apprequests?app_id=<?php print he(getenv('FACEBOOK_APP_ID'))?>&amp;message=<?php print urlencode('Wanna try out the Preferred Gender Pronouns for Facebook app and keep me updated when your gender expression changes?');?>&amp;to=<?php print he($person->id)?>&amp;redirect_uri=<?php print fullUrl($_SERVER['PHP_SELF'], 'urlencode');?>">Invite <?php print he($my_name);?> to try this out!</a></p>
+    <?php else : ?>
     <p>Hi, my name is <a href="<?php print he($my_link);?>" target="_top"><img alt="" src="<?php print he($my_picture_url);?>" /><?php print he($my_name);?></a>. (<a id="fb-logout-button" class="FacebookButton" href="<?php print $_SERVER['PHP_SELF'];?>">Log out of Facebook<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a><?php if (!empty($_GET['show_user'])) :?>. <a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
     <form id="pgps-fb-form" action="<?php print $_SERVER['PHP_SELF']?>">
         <input type="hidden" name="facebook_id" value="<?php $val = (empty($_GET['show_user'])) ? $user_id: $_GET['show_user']; print he($val);?>" />
@@ -204,6 +212,7 @@ window.fbAsyncInit = function () {
 -->
         <input type="submit" name="submit" value="I see no reason why the gunpowder treason should ever be forgot." />
     </form>
+    <?php endif;?>
     <p>(<a href="http://www.grammar-monster.com/lessons/pronouns_different_types.htm" target="_blank">Grammar is fun</a>!)</p>
 <?php endif; ?>
 </div>
