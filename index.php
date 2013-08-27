@@ -139,6 +139,7 @@ if ($user_id) {
 <html lang="en">
 <head>
 <title>Preferred Gender Pronouns for Facebook</title>
+<link rel="stylesheet" type="text/css" href="style.css" />
 </head>
 <body>
 <div id="fb-root"></div>
