@@ -112,12 +112,20 @@ if ($user_id) {
 
     if (!empty($_GET['show_user']) && $friends['data']) {
         foreach ($friends['data'] as $friend) {
-            if ($_GET['show_user'] == $friend['id']) {
-                $my_name = $friend['name'];
-                $my_link = $friend['link'];
-                $my_picture_url = "https://graph.facebook.com/{$friend['id']}/picture?type=square";
-                $person = new PersonWithPronouns($friend['id']);
+            if (is_numeric($_GET['show_user'])) {
+                if ($_GET['show_user'] != $friend['id']) {
+                    continue;
+                }
+            } else {
+                // We were given a user name.
+                if ($_GET['show_user'] != $friend['name']) {
+                    continue;
+                }
             }
+            $my_name = $friend['name'];
+            $my_link = $friend['link'];
+            $my_picture_url = "https://graph.facebook.com/{$friend['id']}/picture?type=square";
+            $person = new PersonWithPronouns($friend['id']);
         }
     }
 
@@ -174,6 +182,7 @@ window.fbAsyncInit = function () {
     </section>
     <p><span class="fb-login-button">Log in to start using Preferred Gender Pronouns for Facebook</span></p>
 <?php else : ?>
+    <?php if ($friends['data']) : include 'search.php'; endif;?>
     <div class="FlashMessage"><?php print getFlashMessage();?></div>
     <p>Hi, my name is <a href="<?php print he($my_link);?>" target="_top"><img alt="" src="<?php print he($my_picture_url);?>" /><?php print he($my_name);?></a>. (<a id="fb-logout-button" class="FacebookButton" href="<?php print $_SERVER['PHP_SELF'];?>">Log out of Facebook<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a><?php if (!empty($_GET['show_user'])) :?>. <a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
     <form id="pgps-fb-form" action="<?php print $_SERVER['PHP_SELF']?>">
