@@ -56,7 +56,7 @@ if ($user_id) {
         $res = $FB->api('/me?fields=picture');
         $my_picture_url = $res['picture']['data']['url'];
         // Get a list of the user's friends.
-        $friends = $FB->api('/me/friends?fields=id,name,link,installed');
+        $friends = $FB->api('/me/friends?fields=id,name,link,picture.type(square),installed');
     } catch (FacebookApiException $e) {
         if (!$FB->getAccessToken()) {
             $url = ($_SERVER['HTTPS']) ? 'https:// ': 'http://';
@@ -139,6 +139,20 @@ if ($user_id) {
         // Set Gender from Facebook's preference, if it exists.
         $person->gender = $me['gender'];
     }
+
+    // Make a list of all of "my" friends who use this app.
+    if ($friends['data']) {
+        $friends_with_app = array();
+        foreach ($friends['data'] as $friend) {
+            if ($friend['installed']) {
+                array_push($friends_with_app, $friend);
+            }
+        }
+        // Choose a few friends at random for later display.
+        if ($friends_with_app) {
+            $friend_keys = @array_rand($friends_with_app, 3); // Suppress warnings in case we don't have this many friends.
+        }
+    }
 }
 ?><!DOCTYPE html>
 <html lang="en">
@@ -214,6 +228,16 @@ window.fbAsyncInit = function () {
     </form>
     <?php endif;?>
     <p>(<a href="http://www.grammar-monster.com/lessons/pronouns_different_types.htm" target="_blank">Grammar is fun</a>!)</p>
+    <?php if ($friends_with_app) : ?>
+    <section id="friends-with-app">
+        <p>Hey, listen! Some of your friends have entered preferred gender pronouns. Use the pronouns your friends have entered to earn extra experience points!</p>
+        <ul>
+        <?php for ($i = 0; $i < count($friend_keys); $i++) : $f = $friends_with_app[$friend_keys[$i]];?>
+            <li><a href="<?php print he(fullUrl("{$_SERVER['PHP_SELF']}?show_user={$f['id']}"));?>"><img alt="" src="<?php print he($f['picture']['data']['url'])?>" />Lookup <?php print he($f['name'])?>'s pronouns</a>.</li>
+        <?php endfor; ?>
+        </ul>
+    </section>
+    <?php endif;?>
 <?php endif; ?>
     <section id="Footer">
         <p><a href="http://Cyberbusking.org/">I &hearts; gender expression</a>. Please build inclusive technology; it's not just more respectful, it's more robust, too. <a href="http://maymay.net/blog/2009/01/22/gender-and-technology-at-ignitesydney-with-presentation-slides/">Learn more</a>.</p>

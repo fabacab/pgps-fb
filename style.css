@@ -7,6 +7,17 @@ html, body {
     float: right;
 }
 
+#friends-with-app li {
+    list-style-type: none;
+    float: left;
+    width: 29%;
+    margin: 0 1% 25px;
+}
+#friends-with-app img {
+    display: block;
+}
+
 #Footer {
+    clear: both;
     font-size: x-small;
 }
