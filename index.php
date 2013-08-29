@@ -122,7 +122,8 @@ if ($user_id) {
         }
         // Choose a few friends at random for later display.
         if ($friends_with_app) {
-            $friend_keys = array_rand($friends_with_app, count($friends_with_app));
+            $friend_keys = array_keys($friends_with_app);
+            shuffle($friend_keys); // Randomize.
         }
     }
 }
