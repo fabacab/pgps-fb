@@ -122,7 +122,7 @@ if ($user_id) {
         }
         // Choose a few friends at random for later display.
         if ($friends_with_app) {
-            $friend_keys = @array_rand($friends_with_app, 3); // Suppress warnings in case we don't have this many friends.
+            $friend_keys = array_rand($friends_with_app, count($friends_with_app));
         }
     }
 }
@@ -206,7 +206,7 @@ window.fbAsyncInit = function () {
         <ul>
         <?php for ($i = 0; $i < count($friend_keys); $i++) : $f = $friends_with_app[$friend_keys[$i]];?>
             <li><a href="<?php print he(fullUrl("{$_SERVER['PHP_SELF']}?show_user={$f['id']}"));?>"><img alt="" src="<?php print he($f['picture']['data']['url'])?>" />Lookup <?php print he($f['name'])?>'s pronouns</a>.</li>
-        <?php endfor; ?>
+        <?php if ($i === 8) { break; } endfor; // limit to 9 friends. ?>
         </ul>
     </section>
     <?php endif;?>
