@@ -68,7 +68,7 @@ TABLE_DEFINITION;
         $data = array();
         $conn = pg_connect($this->psqlConnectionStringFromDatabaseUrl()) or die('Could not connect to PostrgreSQL server.');
         $this->db_connection = $conn;
-        $sql = 'SELECT * FROM ' . pg_escape_identifier(self::PPL_TBL) . ' WHERE id=' . pg_escape_string($this->id);
+        $sql = 'SELECT * FROM ' . my_pg_escape_identifier(self::PPL_TBL) . ' WHERE id=' . pg_escape_string($this->id);
         $result = pg_query($conn, $sql);
         if (!$result && (false !== strpos(pg_last_error(), 'relation "' . self::PPL_TBL . '" does not exist'))) {
             // TODO: Write a warning log that we're creating the table from scratch ourselves.
@@ -77,7 +77,7 @@ TABLE_DEFINITION;
             }
         } else if (!pg_num_rows($result)) {
             // If we don't have a record, we should make one for ourselves.
-            $sql = 'INSERT INTO ' . pg_escape_identifier(self::PPL_TBL) . ' (id) VALUES ($1);';
+            $sql = 'INSERT INTO ' . my_pg_escape_identifier(self::PPL_TBL) . ' (id) VALUES ($1);';
             $result = pg_query_params($conn, $sql, array(
                 pg_escape_string($this->id),
             ));
@@ -119,7 +119,7 @@ TABLE_DEFINITION;
     }
 
     private function writeToPostgreSQL () {
-        $sql  = 'UPDATE ' . pg_escape_identifier(self::PPL_TBL) . ' SET';
+        $sql  = 'UPDATE ' . my_pg_escape_identifier(self::PPL_TBL) . ' SET';
         $sql .= ' gender=$1, personal_subjective=$2, personal_objective=$3, possesive=$4, reflexive=$5';
         $sql .= ' WHERE id=$6;';
         $result = pg_query_params($this->db_connection, $sql, array(

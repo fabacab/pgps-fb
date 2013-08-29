@@ -43,3 +43,12 @@ function getFlashMessage ($output = 'html', $before = '<li>', $after = '</li>') 
         return $out;
     }
 }
+
+// Backwards compatibility to PHP 5.3, such as default Heroku buildpack.
+function my_pg_escape_identifier ($str) {
+    if (function_exists('pg_escape_identifier')) {
+        return pg_escape_identifier($str);
+    } else {
+        return "\"$str\""; // Just quote it.
+    }
+}
