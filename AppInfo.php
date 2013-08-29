@@ -46,4 +46,16 @@ class AppInfo {
     return $protocol . $_SERVER['HTTP_HOST'] . $path;
   }
 
+  public static function databaseURL () {
+      return getenv('DATABASE_URL');
+  }
+
+  public static function findBestStorage () {
+      if (self::databaseURL() && function_exists('pg_connect')) {
+          return 'postgres';
+      } else {
+          return 'filesystem';
+      }
+  }
+
 }

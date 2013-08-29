@@ -1,7 +1,7 @@
 <?php
 require_once 'lib/facebook/src/facebook.php';
-require_once 'lib/pgps-fb.php';
 require_once 'AppInfo.php';
+require_once 'lib/pgps-fb.php';
 require_once 'utils.php';
 
 // Enforce HTTPS on production
