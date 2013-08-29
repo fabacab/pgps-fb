@@ -12,6 +12,7 @@ html, body {
     float: left;
     width: 29%;
     margin: 0 1% 25px;
+    white-space: nowrap;
 }
 #friends-with-app img {
     display: block;
