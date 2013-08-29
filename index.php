@@ -1,47 +1,19 @@
 <?php
 require_once 'lib/facebook/src/facebook.php';
 require_once 'lib/pgps-fb.php';
-function he ($str) {
-    return htmlentities($str, ENT_QUOTES, 'UTF-8');
-}
-function fullUrl ($page, $encode = false) {
-    $https = ($_SERVER['HTTPS']) ? 'https' : 'http';
-    $ret = "$https://{$_SERVER['HTTP_HOST']}/$page";
-    return ($encode) ? $encode($ret) : $ret;
-}
+require_once 'AppInfo.php';
+require_once 'utils.php';
 
-function getFacebookAppToken () {
-    $url = 'https://graph.facebook.com/oauth/access_token?'.
-           'client_id=' . getenv('FACEBOOK_APP_ID') .
-           '&client_secret=' . getenv('FACEBOOK_SECRET') .
-           '&grant_type=client_credentials';
-    $res = file_get_contents($url);
-    list(, $token) = explode('=', $res);
-    return $token;
-}
-function getFlashMessage ($output = 'html', $before = '<li>', $after = '</li>') {
-    global $pgps_flashmsg;
-    if (count($pgps_flashmsg)) {
-        $out = '';
-        foreach ($pgps_flashmsg as $msg) {
-            switch ($output) {
-                case 'HTML':
-                case 'html':
-                    $out .= '<ul>';
-                    $out .= $before . he($msg) . $after;
-                    $out .= '</ul>';
-                default:
-                    break;
-            }
-        }
-        return $out;
-    }
+// Enforce HTTPS on production
+if (substr(AppInfo::getUrl(), 0, 8) != 'https://' && ($_SERVER['REMOTE_ADDR'] != '127.0.0.1' && $_SERVER['REMOTE_ADDR'] != '::1')) {
+    header('Location: https://'. $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
+    exit();
 }
 
 // Initialize.
 $FB = new Facebook(array(
-    'appId' => getenv('FACEBOOK_APP_ID'),
-    'secret' => getenv('FACEBOOK_SECRET'),
+    'appId' => AppInfo::appID(),
+    'secret' => AppInfo::appSecret(),
     'sharedSession' => true,
     'trustForwarded' => true,
 ));
@@ -166,7 +138,7 @@ if ($user_id) {
 window.fbAsyncInit = function () {
     // init the FB JS SDK
     FB.init({
-        appId: '<?php print he(getenv('FACEBOOK_APP_ID'), ENT_QUOTES, 'UTF-8');?>',
+        appId: '<?php print he(AppInfo::appID(), ENT_QUOTES, 'UTF-8');?>',
         status: true,
         cookie: true,
         xfbml: true
@@ -205,7 +177,7 @@ window.fbAsyncInit = function () {
     <?php if ($friends['data']) : include 'search.php'; endif;?>
     <div class="FlashMessage"><?php print getFlashMessage();?></div>
     <?php if (!empty($_GET['show_user']) && (false === $person->installed)) : ?>
-    <p><?php print he($my_name);?> has not yet installed this app! <a href="<?php print ($_SERVER['HTTPS']) ? 'https' : 'http';?>://www.facebook.com/dialog/apprequests?app_id=<?php print he(getenv('FACEBOOK_APP_ID'))?>&amp;message=<?php print urlencode('Wanna try out the Preferred Gender Pronouns for Facebook app and keep me updated when your gender expression changes?');?>&amp;to=<?php print he($person->id)?>&amp;redirect_uri=<?php print fullUrl($_SERVER['PHP_SELF'], 'urlencode');?>" target="_top">Invite <?php print he($my_name);?> to try this out!</a></p>
+    <p><?php print he($my_name);?> has not yet installed this app! <a href="<?php print ($_SERVER['HTTPS']) ? 'https' : 'http';?>://www.facebook.com/dialog/apprequests?app_id=<?php print he(AppInfo::appID())?>&amp;message=<?php print urlencode('Wanna try out the Preferred Gender Pronouns for Facebook app and keep me updated when your gender expression changes?');?>&amp;to=<?php print he($person->id)?>&amp;redirect_uri=<?php print fullUrl($_SERVER['PHP_SELF'], 'urlencode');?>" target="_top">Invite <?php print he($my_name);?> to try this out!</a></p>
     <?php else : ?>
     <p>Hi, my name is <a href="<?php print he($my_link);?>" target="_top"><img alt="" src="<?php print he($my_picture_url);?>" /><?php print he($my_name);?></a>. (<a id="fb-logout-button" class="FacebookButton" href="<?php print $_SERVER['PHP_SELF'];?>">Log out of Facebook<?php if (!empty($_GET['show_user'])) : print he(" ({$me['name']})"); endif;?></a><?php if (!empty($_GET['show_user'])) :?>. <a href="<?php print $_SERVER['PHP_SELF'];?>">Edit my own gender pronouns.</a><?php endif;?>)</p>
     <form id="pgps-fb-form" action="<?php print $_SERVER['PHP_SELF']?>">
