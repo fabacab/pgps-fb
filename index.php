@@ -95,7 +95,7 @@ if ($user_id) {
                 }
             } else {
                 // We were given a user name.
-                if ($_GET['show_user'] != $friend['name']) {
+                if ($_GET['show_user'] != utf8_decode($friend['name'])) { // compare as UTF-8
                     continue;
                 }
             }
