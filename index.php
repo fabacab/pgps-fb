@@ -53,9 +53,9 @@ if ($user_id) {
             array_push($pgps_flashmsg, 'Saved your new gender and pronoun information.');
         }
         // Determine if any of the gender or pronoun fields have changed.
-        if ($old_person != $person) {
-            // If they have, send a notifcation via Facebook Notifications API to users
-            // of this app. For users not using this app, send a Facebook message.
+        if (($old_person != $person) && $_REQUEST['notify']) {
+            // If they have, and the notification option is enabled, send a
+            // notifcation via Facebook Notifications API to users of this app.
             // Get an App token.
             $FB->setAccessToken(getFacebookAppToken());
             $num_notifications = 0;
@@ -192,11 +192,9 @@ window.fbAsyncInit = function () {
                 <li><label for="pgp-reflexive">Reflexive pronoun:</label> "<?php print he($my_name);?> made it <input id="pgp-reflexive" name="reflexive" placeholder="themself/zimself/herself/himself" value="<?php print he($person->reflexive);?>" <?php if (!empty($_GET['show_user'])) : print ' readonly="readonly" '; endif;?>/>, how awesome is that!"</li>
             </ul>
         </fieldset>
-<!--
-        <fieldset><legend>App Preferences</legend>
-            <?php // TODO! ?>
+        <fieldset><legend>Notification Preferences</legend>
+            <label><input type="checkbox" name="notify" checked="checked" /> Send my friends a notification of this change.</label>
         </fieldset>
--->
         <input type="submit" name="submit" value="I see no reason why the gunpowder treason should ever be forgot." />
     </form>
     <?php endif;?>
