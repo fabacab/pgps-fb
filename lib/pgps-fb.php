@@ -78,9 +78,7 @@ TABLE_DEFINITION;
         } else if (!pg_num_rows($result)) {
             // If we don't have a record, we should make one for ourselves.
             $sql = 'INSERT INTO ' . my_pg_escape_identifier(self::PPL_TBL) . ' (id) VALUES ($1);';
-            $result = pg_query_params($conn, $sql, array(
-                pg_escape_string($this->id),
-            ));
+            $result = pg_query_params($conn, $sql, array($this->id));
             if (!$result) {
                 throw new Exception("Failed to INSERT INTO PostgreSQL database for user with ID {$this->id}.");
             }
@@ -123,12 +121,12 @@ TABLE_DEFINITION;
         $sql .= ' gender=$1, personal_subjective=$2, personal_objective=$3, possesive=$4, reflexive=$5';
         $sql .= ' WHERE id=$6;';
         $result = pg_query_params($this->db_connection, $sql, array(
-            pg_escape_string($this->gender),
-            pg_escape_string($this->personal_subjective),
-            pg_escape_string($this->personal_objective),
-            pg_escape_string($this->possesive),
-            pg_escape_string($this->reflexive),
-            pg_escape_string($this->id)
+            $this->gender,
+            $this->personal_subjective,
+            $this->personal_objective,
+            $this->possesive,
+            $this->reflexive,
+            $this->id
         ));
         if (!$result) {
             throw new Exception('Failed to persist new data to PostgreSQL. Database error: ' . pg_last_error());
