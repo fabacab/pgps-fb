@@ -211,7 +211,7 @@ window.fbAsyncInit = function () {
     <?php endif;?>
 <?php endif; ?>
     <section id="Footer">
-        <p><a href="http://Cyberbusking.org/">I &hearts; gender expression</a>. Please build inclusive technology; it's not just more respectful, it's more robust, too. <a href="http://maymay.net/blog/2009/01/22/gender-and-technology-at-ignitesydney-with-presentation-slides/">Learn more</a>.</p>
+        <p><a href="http://Cyberbusking.org/" target="_blank">I &hearts; gender expression</a>. Please build inclusive technology; it's not just more respectful, it's more robust, too. <a href="http://maymay.net/blog/2009/01/22/gender-and-technology-at-ignitesydney-with-presentation-slides/" target="_blank">Learn more</a>.</p>
     </section>
 </div>
 </body>
