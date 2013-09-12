@@ -1,6 +1,6 @@
 <?php
 
-class PersonWithPronouns {
+class PersonWithPronouns implements JsonSerializable {
     var $id; // Their Facebook $user_id.
     var $storage_type;
     var $db_connection;
@@ -33,6 +33,16 @@ TABLE_DEFINITION;
         }
         $this->loadData();
         return $this;
+    }
+
+    public function jsonSerialize () {
+        return array(
+            'id' => $this->id,
+            'personal_subjective' => $this->personal_subjective,
+            'personal_objective' => $this->personal_objective,
+            'possesive' => $this->possesive,
+            'reflexive' => $this->reflexive
+        );
     }
 
     public function setStorageType ($type) {
