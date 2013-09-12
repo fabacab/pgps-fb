@@ -1,6 +1,8 @@
 <?php
 
-class PersonWithPronouns implements JsonSerializable {
+// JsonSerializale is PHP 5.4 only.
+//class PersonWithPronouns implements JsonSerializable {
+class PersonWithPronouns {
     var $id; // Their Facebook $user_id.
     var $storage_type;
     var $db_connection;
@@ -36,13 +38,13 @@ TABLE_DEFINITION;
     }
 
     public function jsonSerialize () {
-        return array(
+        return json_encode(array(
             'id' => $this->id,
             'personal_subjective' => $this->personal_subjective,
             'personal_objective' => $this->personal_objective,
             'possesive' => $this->possesive,
             'reflexive' => $this->reflexive
-        );
+        ));
     }
 
     public function setStorageType ($type) {

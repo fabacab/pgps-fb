@@ -12,4 +12,4 @@ if (substr(AppInfo::getUrl(), 0, 8) != 'https://' && ($_SERVER['REMOTE_ADDR'] !=
 // Load requested data.
 $person = new PersonWithPronouns((int) $_GET['id']);
 // Return requested data in JSON format.
-print json_encode($person);
+print $person->jsonSerialize();
