@@ -57,7 +57,11 @@ PGPS_FB.getUserPgps = function (id, el) {
 PGPS_FB.updatePronounTextInElement = function (el, pronoun) {
     // If this is a TEXT_NODE, this can't have children.
     if (3 === el.nodeType) {
-        el.textContent = el.textContent.replace(/\bher\b|\bhis\b|\btheir\b/, pronoun);
+        // Only replace if we're not already using the correct pronoun.
+        if (-1 == el.textContent.indexOf(pronoun)) {
+            PGPS_FB.log('Replacing pronoun in text node "' + el.textContent + '" with ' + pronoun + '.');
+            el.textContent = el.textContent.replace(/\bher\b|\bhis\b|\btheir\b/, pronoun);
+        }
     } else {
         for (var i = 0; i < el.childNodes.length; i++) {
             PGPS_FB.updatePronounTextInElement(el.childNodes[i], pronoun); // recurse
