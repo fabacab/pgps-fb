@@ -6,7 +6,7 @@
  */
 // ==UserScript==
 // @name           Preferred Gender Pronouns for Facebook (PGPs-FB)
-// @version        0.1
+// @version        0.1.1
 // @namespace      com.maybemaimed.facebook.pgps
 // @updateURL      https://userscripts.org/scripts/source/177700.user.js
 // @description    Teaches Facebook to use your friends' preferred gender pronouns in your news feed and notifications. To work, your friends must have first entered their PGPs in the Preferred Gender Pronouns for Facebook application at https://apps.facebook.com/gender-pronouns

@@ -36,6 +36,8 @@ If you enjoy this script, please consider tossing a few metaphorical coins in [m
 
 Note that only the PGPs-FB client (viewer) is versioned.
 
+* Version 0.1.1:
+    * Fixed [bug](https://github.com/meitar/pgps-fb/issues/18) where pronouns containing a default pronoun were replaced multiple times.
 * Version 0.1:
     * First client release.
 
